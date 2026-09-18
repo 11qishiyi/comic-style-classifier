@@ -1,0 +1,11 @@
+# 统一换行符：仓库以 LF 存储，检出时按平台自动转换。
+# 不加这个文件的话，Windows 上提交的文件会带 CRLF，
+# 在 Linux/macOS 上 clone 后 diff 会整文件变动。
+* text=auto eol=lf
+
+# 二进制文件不要做任何转换
+*.pt binary
+*.onnx binary
+*.jpg binary
+*.png binary
+*.csv text eol=lf

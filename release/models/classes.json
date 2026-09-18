@@ -1,0 +1,6 @@
+{
+  "comic-style-cover-yolo11n-cls": ["chinese", "japanese", "western"],
+  "comic-style-panel-yolo11n-cls": ["japanese", "western"],
+  "comic-style-cover-gray-yolo11n-cls": ["chinese", "japanese", "western"],
+  "comic-style-panel-gray-yolo11n-cls": ["japanese", "western"]
+}
