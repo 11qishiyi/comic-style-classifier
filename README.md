@@ -91,14 +91,16 @@ python release/predict.py release/models/comic-style-cover-yolo11n-cls.onnx 你�
 │   ├── 06_eval.py              # 评估与消融
 │   ├── 07_make_gray.py         # 生成灰度版数据集
 │   ├── 08_cv_books.py          # 按作品交叉验证
-│   └── 09_eval_external.py     # 外部数据集验证
+│   ├── 09_eval_external.py     # 外部数据集验证
+│   └── 10_text_ablation.py     # 文字涂白消融
 ├── docs/                       # 详细文档
 │   ├── dataset.md              # 数据来源、许可、统计、划分设计
 │   ├── experiments.md          # 完整实验结果与消融
 │   ├── limitations.md          # 已知限制
 │   ├── troubleshooting.md      # 9 个工程坑
 │   ├── compliance.md           # 上传 GitHub 的合规要点
-│   └── external-validation.md  # 外部数据集验证（揭示能力边界）
+│   ├── external-validation.md  # 外部数据集验证（揭示能力边界）
+│   └── text-dependency.md      # 文字依赖性检验（模型是否在"读文字"）
 └── requirements.txt
 ```
 

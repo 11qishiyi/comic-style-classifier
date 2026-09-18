@@ -21,6 +21,13 @@
 **`cover` 模型学到的是「封面设计年代感」，不是「民族画风」。**
 详见 [external-validation.md](external-validation.md)。
 
+## 0b. 模型不依赖文字（已实测，不是隐患）
+
+训练数据**未做任何文字擦除**（日文气泡、英文旁白框、中日英标题都在），
+但实测表明模型不靠文字：涂白消融后 panel 仍 94.3%、cover 反升 1.3 分；
+且 Garfield（英文）被判成日漫、Manga109（日文）被判成欧美——**方向相反**。
+详见 [text-dependency.md](text-dependency.md)。
+
 ## 1. 国漫没有内页数据
 
 `chinese` 类全部是封面，因此 `panel/` 副集只能做「日 vs 欧美」二分类，不含国漫。
