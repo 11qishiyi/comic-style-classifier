@@ -2,6 +2,25 @@
 
 使用本数据集与模型前请先读这一节。这些限制多半由数据来源决定，无法通过调参解决。
 
+> **最重要的一条**：外部数据集验证（[external-validation.md](external-validation.md)）显示，
+> `cover` 模型的测试集准确率是**特定域内**的指标，离开该域就失效——
+> 在真实的日本漫画封面（Manga109）上只有 **10.1%** 判对率，
+> 在现代美国报纸连环画（Garfield）上只有 **19.3%**。
+> 请勿把它当作「能识别各国漫画画风」的通用模型使用。
+
+## 0. 外部验证暴露的域局限
+
+| 外部集 | 预期 | 模型 | 判对率 |
+|---|---|---|---|
+| 《钢之炼金术师》分格（文字已抹除） | japanese | `panel` | **1.000** |
+| Manga109（109 部日漫封面） | japanese | `panel` | **0.862** |
+| Manga109（同上） | japanese | `cover` | **0.101** |
+| Garfield（美国报纸连环画） | western | `cover` | 0.193 |
+| Garfield（同上） | western | `panel` | 0.323 |
+
+**`cover` 模型学到的是「封面设计年代感」，不是「民族画风」。**
+详见 [external-validation.md](external-validation.md)。
+
 ## 1. 国漫没有内页数据
 
 `chinese` 类全部是封面，因此 `panel/` 副集只能做「日 vs 欧美」二分类，不含国漫。

@@ -36,6 +36,14 @@ cover 的 19 个错误里 18 个落在 chinese↔japanese 之间，western 零�
 日本轻小说会用厚涂国漫风封面，中国网文会用日式动画风封面。
 **若你的需求是按画风而非按国别分类，中↔日边界不可直接采信。**
 
+**4. 但模型的能力边界比测试集数字窄得多 —— 外部验证揭示的。**
+在训练时从未使用过、全网另找的外部数据集上验证：`panel` 模型跨来源泛化良好
+（《钢之炼金术师》分格 **100%**、Manga109 **86.2%**），
+但 **`cover` 模型只有 10.1%**——在 109 部真实日漫封面上，87% 被判成了欧美。
+根因是它学到的是「封面设计年代感」而非「民族画风」。
+**不要把它当作能识别各国漫画画风的通用模型用。**
+详见 [docs/external-validation.md](docs/external-validation.md)。
+
 完整实验与消融见 [docs/experiments.md](docs/experiments.md)。
 
 ## 快速开始
@@ -82,13 +90,15 @@ python release/predict.py release/models/comic-style-cover-yolo11n-cls.onnx 你�
 │   ├── 05_train_cls.py         # 训练
 │   ├── 06_eval.py              # 评估与消融
 │   ├── 07_make_gray.py         # 生成灰度版数据集
-│   └── 08_cv_books.py          # 按作品交叉验证
+│   ├── 08_cv_books.py          # 按作品交叉验证
+│   └── 09_eval_external.py     # 外部数据集验证
 ├── docs/                       # 详细文档
 │   ├── dataset.md              # 数据来源、许可、统计、划分设计
 │   ├── experiments.md          # 完整实验结果与消融
 │   ├── limitations.md          # 已知限制
 │   ├── troubleshooting.md      # 9 个工程坑
-│   └── compliance.md           # 上传 GitHub 的合规要点
+│   ├── compliance.md           # 上传 GitHub 的合规要点
+│   └── external-validation.md  # 外部数据集验证（揭示能力边界）
 └── requirements.txt
 ```
 
