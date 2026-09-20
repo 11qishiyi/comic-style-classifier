@@ -1,0 +1,54 @@
+#!/bin/sh
+# 提交前检查：阻止图片与数据集被误提交。
+#
+# 背景：本仓库明确声明"不含任何训练图片"（版权原因，见 docs/compliance.md）。
+# 曾经误提交过一张版权图片，虽然已重写历史清除，但需要一道自动闸门防止复发。
+#
+# 启用方式（每个 clone 各执行一次）：
+#     git config core.hooksPath .githooks
+
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+bad_images=$(printf '%s\n' "$staged" | grep -iE '\.(jpe?g|png|webp|bmp|gif|tiff?|avif)$' || true)
+bad_dirs=$(printf '%s\n' "$staged" | grep -E '^(datasets/|runs/|scratch/|\.zcode/)' || true)
+big=$(printf '%s\n' "$staged" | while read -r f; do
+    [ -f "$f" ] || continue
+    sz=$(wc -c < "$f" 2>/dev/null || echo 0)
+    if [ "$sz" -gt 52428800 ]; then echo "  $f  ($((sz / 1048576)) MB)"; fi
+done)
+
+fail=0
+
+if [ -n "$bad_images" ]; then
+    printf '\n提交被阻止：暂存区里有图片文件。\n\n'
+    printf '%s\n' "$bad_images" | sed 's/^/    /'
+    printf '\n  本仓库声明不含任何训练图片（版权原因）。\n'
+    printf '  如果你确认要提交某张图，请先和仓库的合规声明对齐，再用 git commit --no-verify 跳过。\n\n'
+    fail=1
+fi
+
+if [ -n "$bad_dirs" ]; then
+    printf '\n提交被阻止：暂存区里有数据集/训练产物目录。\n\n'
+    printf '%s\n' "$bad_dirs" | sed 's/^/    /'
+    printf '\n  这些目录应在 .gitignore 中被排除。\n\n'
+    fail=1
+fi
+
+if [ -n "$big" ]; then
+    printf '\n提交被阻止：有文件超过 GitHub 的 50 MB 警告线。\n\n'
+    printf '%s\n' "$big"
+    printf '\n  超过 100 MB 会被 GitHub 直接拒收；大文件建议用 Git LFS 或走 Releases。\n\n'
+    fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+    exit 1
+fi
+
+exit 0
