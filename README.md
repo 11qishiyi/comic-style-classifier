@@ -46,31 +46,128 @@ cover 的 19 个错误里 18 个落在 chinese↔japanese 之间，western 零�
 
 完整实验与消融见 [docs/experiments.md](docs/experiments.md)。
 
-## 快速开始
+## 快速开始（照着敲就行）
+
+### 第 1 步：拿到代码
+
+```bash
+git clone https://github.com/11qishiyi/comic-style-classifier.git
+cd comic-style-classifier
+```
+
+不想用 git 的话，在仓库页面点绿色的 **Code → Download ZIP**，解压后进入该目录。
+
+### 第 2 步：装依赖
+
+需要 Python 3.9 或更高（开发环境是 3.14）。
 
 ```bash
 pip install pillow numpy onnxruntime
-
-python release/predict.py release/models/comic-style-cover-yolo11n-cls.onnx 你的图.jpg
 ```
 
+**就这三个，不需要装 PyTorch，也不需要装 ultralytics。**
+
+### 第 3 步：先自检，确认环境没问题
+
+```bash
+python release/predict.py --self-test
 ```
-你的图.jpg
+
+不需要任何图片，它会检查依赖、加载模型、跑通推理链路，输出类似：
+
+```
+  [OK] numpy 2.4.4
+  [OK] PIL 12.2.0
+  [OK] onnxruntime 1.28.0
+  [OK] 模型 comic-style-cover-yolo11n-cls.onnx (6.2 MB)
+  [OK] 类别 ['chinese', 'japanese', 'western']
+  [OK] 推理链路通，输出 3 个概率，和 = 1.0000
+
+环境正常，可以跑真实图片了：
+    python predict.py 我的图.jpg
+```
+
+看到这段就说明装好了。
+
+### 第 4 步：准备一张图
+
+**仓库里不含任何图片**（训练图有版权，见 [docs/compliance.md](docs/compliance.md)），
+所以你需要自己找一张。最省事的三种办法：
+
+- 随手截一张漫画/动画封面存成 `.jpg`
+- 手机拍一本漫画书的封面
+- 用你已有的任何图片（截图、下载的壁纸都行）
+
+假设你把它存成了 `我的图.jpg`。
+
+### 第 5 步：跑
+
+```bash
+python release/predict.py 我的图.jpg
+```
+
+**是的，只要给一张图就够了**，模型会自动选默认的 `cover`（三分类）。
+
+输出：
+
+```
+模型: comic-style-cover-yolo11n-cls.onnx   识别类别: ['chinese', 'japanese', 'western']
+
+我的图.jpg
   -> western  (0.9918)
      japanese   0.0082
      chinese    0.0000
 ```
 
-`.onnx` 路径**不需要 ultralytics / torch**，也可用 C#/Java/JS/C++/移动端加载。
-需要逐位复现时用 `.pt` 路径（`pip install ultralytics`）。
+也可以直接给一个文件夹，批量跑：
 
-| 输入 | 用哪个模型 |
+```bash
+python release/predict.py C:/Users/你/Pictures/漫画/
+```
+
+### 换个模型
+
+| 你的输入是什么 | 用哪个 | 命令 |
+|---|---|---|
+| 封面、单幅插画 | `cover`（三分类，默认） | `python release/predict.py 图.jpg` |
+| 漫画的**单格**（分格） | `panel`（二分类） | `python release/predict.py --model panel 图.jpg` |
+| 整页漫画 | 两个都不适合 | 需先用 `scripts/04_panelize.py` 切分格 |
+
+不确定有哪些模型，或者想看每个模型认哪些类别：
+
+```bash
+python release/predict.py --list
+```
+
+### 在 Python 里调用
+
+```python
+import sys
+sys.path.insert(0, "release")
+from predict import OnnxClassifier, load_classes
+
+clf = OnnxClassifier("release/models/comic-style-cover-yolo11n-cls.onnx")
+classes = load_classes("release/models/comic-style-cover-yolo11n-cls.onnx")
+probs = clf("我的图.jpg")
+print(classes[int(probs.argmax())], float(probs.max()))
+```
+
+### 遇到问题
+
+| 现象 | 原因与解决 |
 |---|---|
-| 封面、单幅插画 | `comic-style-cover-yolo11n-cls` |
-| 漫画单格（分格） | `comic-style-panel-yolo11n-cls` |
-| 整页漫画 | 两个都不适合，需先切分格 |
+| `python: command not found` | 试 `python3`，或确认安装 Python 时勾了「Add to PATH」 |
+| `ModuleNotFoundError: No module named 'onnxruntime'` | 没装依赖，回到第 2 步 |
+| `没有找到任何图片` | 路径写错了。用绝对路径最稳，如 `C:/Users/你/Desktop/图.jpg` |
+| 路径里有中文/空格 | **支持**，不用特殊处理 |
+| `--self-test` 报模型缺失 | 确认 `release/models/` 下有 `.onnx` 文件；用 `git lfs` 拉的可能是指针文件 |
+| 想装 `.pt` 路径 | `pip install ultralytics` 后把 `.onnx` 换成 `.pt` 即可 |
 
-模型详情、预处理规格与限制见 [release/MODEL_CARD.md](release/MODEL_CARD.md)。
+**重要**：这个模型**不能**用来判别现代美漫、报纸连环画或复古日漫单行本封面——
+外部验证显示它在这些数据上只有 10–19% 判对率，
+详见 [docs/external-validation.md](docs/external-validation.md)。
+
+模型详情、预处理规格与完整限制见 [release/MODEL_CARD.md](release/MODEL_CARD.md)。
 
 ## 目录结构
 
